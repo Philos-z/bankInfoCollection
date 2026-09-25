@@ -1,0 +1,35 @@
+[
+  {"contains":"gebuhrenfrei.com/sonderaktionen","expected_status":"recommended","expected_role":"primary"},
+  {"contains":"gebuhrenfrei.com/buyapowa","expected_status":"recommended","expected_role":"primary"},
+  {"contains":"gebuhrenfrei.com/konditionen","expected_status":"recommended","expected_role":"primary"},
+  {"contains":"gebuhrenfrei.com/agb","expected_status":"reject","expected_role":null},
+
+  {"contains":"americanexpress.com/de-de/referral?CPID=100269368","expected_status":"review","expected_role":null},
+  {"contains":"amex-freunde-werben-36018","expected_status":"recommended","expected_role":"primary"},
+  {"contains":"americanexpress.com/de-de/business/upgrade/","expected_status":"recommended","expected_role":"primary"},
+  {"contains":"categoryName=de_1b_earn_extrapoints&parentCategoryName=de_1_earn&newCategorySearch=true","expected_status":"recommended","expected_role":"primary"},
+  {"contains":"americanexpress.com/de/kreditkarte/platinum-card/","expected_status":"recommended","expected_role":"primary"},
+  {"contains":"vorteile/platinum-card/angebotsbedingungen","expected_status":"reject","expected_role":null},
+  {"contains":"vorteile/gold-metall/angebots-bedingungen","expected_status":"reject","expected_role":null},
+  {"contains":"MRTurbo/TurboClassic","expected_status":"reject","expected_role":null},
+  {"contains":"amex-offers-12453","expected_status":"reject","expected_role":null},
+  {"contains":"amexcited/cards/kreditkarte-kostenlos-12404","expected_status":"recommended","expected_role":"primary"},
+  {"contains":"amex-punkte-einloesen-12432","expected_status":"reject","expected_role":null},
+
+  {"contains":"credit-cards/products/rewards/","expected_status":"recommended","expected_role":"primary"},
+  {"contains":"credit-cards/premier-credit-cards/","expected_status":"recommended","expected_role":"primary"},
+  {"contains":"credit-cards/products/balance-transfer/","expected_status":"recommended","expected_role":"primary"},
+  {"contains":"summary-box-balance-transfer.pdf","expected_status":"recommended","expected_role":"supporting"},
+  {"contains":"summary-box-purchase-plus-credit-card.pdf","expected_status":"recommended","expected_role":"supporting"},
+  {"contains":"dco-cc.hsbc.co.uk/ntb?productCode=UJANT&offerId=MD10034","expected_status":"reject","expected_role":null},
+  {"contains":"HSBC_Credit_Card_Terms_and_ConditionsOct2018.pdf","expected_status":"reject","expected_role":null},
+  {"contains":"what-is-a-0-percent-credit-card-for","expected_status":"reject","expected_role":null},
+
+  {"contains":"credit-agricole.fr/particulier/ouvrir-un-compte.html","expected_status":"recommended","expected_role":"primary"},
+  {"contains":"service-bancaire/offre-prestige.html","expected_status":"recommended","expected_role":"primary"},
+  {"contains":"carte-world-elite-mastercard.html","expected_status":"reject","expected_role":null},
+  {"contains":"particulier/informations/tarifs.html","expected_status":"reject","expected_role":null},
+  {"contains":"carte-mastercard-standard.html","expected_status":"reject","expected_role":null},
+  {"contains":"carte-visa-classic.html","expected_status":"reject","expected_role":null},
+  {"contains":"carte-mozaic-black.html","expected_status":"recommended","expected_role":"primary"}
+]

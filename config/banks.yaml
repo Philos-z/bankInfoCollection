@@ -1,0 +1,65 @@
+# source_type: official = bank-owned domain (trust anchor); third_party = independent confirmation.
+# Verification needs >= 2 distinct domains, so every bank should have third-party sources.
+# fetcher: requests (fast) | playwright (JS pages / basic bot checks).
+# selector: optional CSS for the promo area; if it stops matching, AI self-heals it.
+# URLs checked on 2026-09-23.
+
+banks:
+  - code: amex_de
+    name: American Express Deutschland
+    country: DE
+    website: https://www.americanexpress.com/de-de/
+    sources:
+      - {type: official, url: "https://www.americanexpress.com/de-de/kreditkarten/", fetcher: playwright}
+      - {type: official, url: "https://www.americanexpress.com/de-de/amexcited/benefits/amex-willkommensbonus-12517", fetcher: playwright, selector: "main"}
+      - {type: third_party, url: "https://meilenoptimieren.com/american-express-aktionen/"}
+      - {type: third_party, url: "https://travel-dealz.de/deal/amex-platinum-aktion-2026/"}
+      - {type: third_party, url: "https://reisetopia.de/deals/american-express-gold-card-bonus/", selector: ".main-content > article"}
+
+  - code: hsbc_uk
+    name: HSBC UK
+    country: GB
+    website: https://www.hsbc.co.uk/
+    sources:
+      - {type: official, url: "https://www.hsbc.co.uk/credit-cards/"}
+      - {type: official, url: "https://www.hsbc.co.uk/credit-cards/products/balance-transfer/"}
+      - {type: official, url: "https://www.hsbc.co.uk/credit-cards/products/purchase-card/"}
+      - {type: third_party, url: "https://www.finder.com/uk/credit-cards/hsbc/hsbc-balance-transfer"}
+      - {type: third_party, url: "https://www.moneysavingexpert.com/credit-cards/balance-transfer-credit-cards/", fetcher: playwright, selector: "article"}
+
+  - code: advanzia
+    # Keep product names out of bank names: bank-name words are stripped when matching card names.
+    name: Advanzia Bank
+    country: LU
+    website: https://www.gebuhrenfrei.com/
+    sources:
+      # requests gets 403 here; Playwright passes.
+      - {type: official, url: "https://www.gebuhrenfrei.com/", fetcher: playwright, selector: ".adt-banner-promo.adt-active, .adt-promotion-container-omnichannel, .adt-avis-container-omnichannel"}
+      - {type: third_party, url: "https://kreditkarten360.com/karte/advanzia-gold/"}
+      - {type: third_party, url: "https://goldgebuhrenfrei.com/advanzia-freunde-werben/"}
+
+  - code: bbva_es
+    name: BBVA España
+    country: ES
+    website: https://www.bbva.es/
+    sources:
+      # bbva.es returns Akamai 403 to requests and headless Chromium; kept disabled
+      # rather than evading bot protection. Enable if you get an allowed access path.
+      - {type: official, url: "https://www.bbva.es/personas/productos/tarjetas/tarjeta-credito-aqua.html", fetcher: playwright, enabled: false}
+      - {type: official, url: "https://www.bbva.es/general/promociones-y-ofertas.html", fetcher: playwright, enabled: false}
+      - {type: third_party, url: "https://www.helpmycash.com/opiniones/tarjetas/tarjeta-aqua-de-bbva/", fetcher: playwright, selector: "main"}
+      # Persistently returns 403 in our crawler; retained disabled for history after replacement by accessible sources.
+      - {type: third_party, url: "https://www.eleconomista.es/finanzas-personales/posts-nuevos/2026-06-09-bbva-regala-hasta-1-060-euros-a-nuevos-clientes-y-agita-el-mercado-de-la-captacion/", fetcher: playwright, enabled: false}
+      - {type: third_party, url: "https://www.finect.com/usuario/mariarefojos/articulos/hasta-400-euros-o-un-iphone-los-regalos-que-te-hacen-los-bancos-por-abrirte-una-cuenta"}
+      - {type: third_party, url: "https://ifinanzas.es/entidad/bbva"}
+      - {type: third_party, url: "https://roams.es/actualidad/finanzas/asi-cobra-plan-1060-bbva-no-falta-cumplir-cinco-requisitos/"}
+
+  - code: ca_fr
+    name: Crédit Agricole
+    country: FR
+    website: https://www.credit-agricole.fr/
+    sources:
+      - {type: official, url: "https://www.credit-agricole.fr/particulier/compte/carte-bancaire.html", fetcher: playwright, selector: "main#content"}
+      - {type: official, url: "https://www.credit-agricole.fr/particulier/simulation-devis/comptes-et-cartes/comparatif-offres-bancaires.html", fetcher: playwright, selector: "main#content"}
+      - {type: third_party, url: "https://selectra.info/finance/banques/credit-agricole"}
+      - {type: third_party, url: "https://www.moneyvox.fr/epargne/credit-agricole/forfaits-bancaires", selector: ".fiche-produit"}

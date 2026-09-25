@@ -1,0 +1,7 @@
+requests>=2.32
+playwright>=1.47
+openai>=1.50
+PyYAML>=6.0
+beautifulsoup4>=4.12
+pypdf>=5.0
+python-dotenv>=1.0
