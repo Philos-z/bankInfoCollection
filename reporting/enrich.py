@@ -41,6 +41,9 @@ The purpose is to answer, in plain language:
 Every fact MUST include evidence_refs containing one or more extraction_id values from the supplied evidence.
 Only cite extraction IDs that directly support the fact. Keep amounts, thresholds, dates, durations and product
 names faithful to the evidence. If a field is not supported, omit it or return null/empty rather than infer it.
+Never calculate or introduce a derived numeric value that is not explicitly present in the cited evidence
+(for example, do not subtract a 3,000 threshold from a 5,000 threshold and state an additional 2,000 requirement
+unless 2,000 is itself stated in the cited extraction). Rephrase using the explicit total thresholds instead.
 
 Return exactly this JSON shape:
 {
