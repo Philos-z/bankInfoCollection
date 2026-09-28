@@ -49,10 +49,41 @@ Useful commands:
 ```bash
 python main.py health
 python main.py list
+python main.py report --verified-only
+python main.py report --campaign 88
+python main.py report --campaign 88 --json
+python main.py report --system
 python main.py discover
 python main.py validate-leads
 python main.py leads
 ```
+
+### Campaign reporting
+
+`report` is the user-facing result layer. It reads canonical campaigns plus all linked source evidence and does
+not need to recrawl pages.
+
+```bash
+# current user-facing campaigns
+python main.py report
+
+# only cross-source verified campaigns
+python main.py report --verified-only
+
+# filters
+python main.py report --bank bbva_es
+python main.py report --type welcome_bonus
+python main.py report --expiring
+
+# one campaign with source/evidence/original-page provenance
+python main.py report --campaign 88
+
+# machine-readable output, including retained evidence/snapshot history
+python main.py report --campaign 88 --json
+```
+
+Each detailed source entry includes the live URL, evidence quote, confidence, fetch time, snapshot ID, raw
+HTML/PDF snapshot path, normalized-text snapshot path and all retained evidence versions for that source.
 
 ## Data and secrets
 

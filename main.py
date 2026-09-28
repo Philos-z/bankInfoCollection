@@ -5,6 +5,7 @@ import logging
 from config.loader import sync_config
 from crawler import runner, source_health
 from extractor.extractor import extract_pending
+from reporting.report import as_json, campaign_facts, render_detail, render_summary, render_system, system_summary
 from storage.db import init_db, session
 from validator.validate import validate
 
@@ -96,6 +97,31 @@ def cmd_health(a):
     print(json.dumps({"summary": source_health.counts(rows)}, ensure_ascii=False))
 
 
+def cmd_report(a):
+    init_db()
+    with session() as conn:
+        if a.system:
+            result = system_summary(conn)
+            print(as_json(result) if a.json else render_system(result))
+            return
+        facts = campaign_facts(
+            conn,
+            bank=a.bank,
+            campaign_type=a.type,
+            verified_only=a.verified_only,
+            expiring=a.expiring,
+            include_all=a.all,
+            campaign_id=a.campaign,
+        )
+    if a.campaign is not None:
+        if not facts:
+            raise SystemExit(f"campaign {a.campaign} not found for the selected filters")
+        result = facts[0]
+        print(as_json(result) if a.json else render_detail(result))
+        return
+    print(as_json(facts) if a.json else render_summary(facts))
+
+
 def cmd_leads(a):
     init_db()
     with session() as conn:
@@ -149,6 +175,7 @@ def main():
         ("list", cmd_list, "show campaigns"),
         ("sources", cmd_sources, "show source health"),
         ("health", cmd_health, "show source health levels and failure streaks"),
+        ("report", cmd_report, "show user-facing campaign facts and evidence"),
         ("leads", cmd_leads, "review discovery leads"),
     ]:
         sp = sub.add_parser(name, help=help_)
@@ -173,6 +200,14 @@ def main():
             sp.add_argument("--validator-reject", action="store_true", help="show validator-rejected leads")
             sp.add_argument("--all", action="store_true", help="include accepted/rejected human-review statuses")
             sp.add_argument("--force", action="store_true", help="allow accepting a validator-rejected/unvalidated lead")
+        if name == "report":
+            sp.add_argument("--verified-only", action="store_true", help="show only verified campaigns")
+            sp.add_argument("--type", help="filter by campaign type, e.g. welcome_bonus")
+            sp.add_argument("--expiring", action="store_true", help="show only expiring campaigns")
+            sp.add_argument("--all", action="store_true", help="include expired/removed campaigns")
+            sp.add_argument("--campaign", type=int, help="show one campaign with full evidence/original-page drill-down")
+            sp.add_argument("--json", action="store_true", help="emit machine-readable JSON")
+            sp.add_argument("--system", action="store_true", help="show operational system summary instead of campaign facts")
     args = p.parse_args()
     args.func(args)
 

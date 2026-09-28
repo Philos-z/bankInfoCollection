@@ -268,4 +268,17 @@ cp .env.example .env        # 填写 AI_BASE_URL / AI_API_KEY / AI_MODEL
 - [x] Discovery 第二阶段 content validation / source recommendation：过滤 application、通用条款、教育文章、
       personalized hub 与 standing feature；支持 evidence guard、primary/supporting role、golden benchmark 与人工 accept 闸门。
 - [x] V1 System Acceptance：全量 run 幂等、增量 discovery、health、lifecycle、duplicate、DB integrity、80-test regression 全部通过。
+- [x] V1.1 Reporting MVP：已增加独立 `reporting/` 用户结果层，把 canonical campaign 与多个
+      extraction/source 聚合为用户可读对象；默认输出银行/产品、活动名称、summary、reward、conditions、
+      start/end date、lifecycle、verification 与 independent source count。支持 bank/type/verified/expiring 过滤。
+- [x] V1.1 Evidence / Original Page：每个最终事实可 drill down 到证据来源，至少保留并展示 `source_url`
+      （原始网页 live URL）、domain/source type、`evidence_quote`、confidence、fetched_at、snapshot_id；同时提供
+      当时抓取的原始 snapshot（raw HTML/PDF + normalized text）入口。即使 live 页面之后修改或下线，也必须能
+      回看系统当时用于提取/验证的原始页面版本；同 source 的历史 evidence/snapshot 通过 `evidence_history` 保留。
+- [x] V1.1 Report 输出：默认面向最终用户展示当前有效活动；支持 `--verified-only`、`--bank`、`--type`、
+      `--expiring`、`--json`，并支持单 campaign 的 evidence/source drill-down。JSON 输出同样必须带 provenance，
+      不能把无法回溯到 source/snapshot/evidence 的 AI 总结当作已验证事实。
+- [ ] V1.1 Fact Enrichment：把当前较宽的 `conditions` / supporting conditions 进一步语义拆成明确的
+      `eligibility[]`、`requirements[]`、`benefit_components[]`，并要求每个聚合 fact 带 extraction/snapshot
+      evidence refs；应缓存结果，避免每次 `report` 都重新调用模型。当前 Reporting MVP 不伪造这层结构。
 - [ ] 轮换曾在对话中明文出现过的 proxy key。

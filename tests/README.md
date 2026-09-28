@@ -150,6 +150,11 @@ BBVA 作为“新银行只改配置、不改核心逻辑”的接入验收见
 保护 lifecycle 对 LLM 漏抽的鲁棒性：旧 evidence 如果仍能在该 source 最新 snapshot 中逐字/受控省略匹配，
 campaign 不得仅因为本轮 extraction 缺失就变成 `removed`；只有最新页面证据也消失时才允许 removed。
 
+### `test_reporting.py`
+
+保护 V1.1 用户结果层：canonical campaign 聚合、独立 domain 计数、同一 source 多 snapshot 不重复计数、
+latest evidence 选择、完整 evidence history / raw snapshot provenance、report filter 与 system summary。
+
 完整 V1 系统验收见 `tests/eval_reports/v1_system_acceptance_2026-09-25.md`。
 
 ## 测试失败时怎么处理
