@@ -85,6 +85,33 @@ python main.py report --campaign 88 --json
 Each detailed source entry includes the live URL, evidence quote, confidence, fetch time, snapshot ID, raw
 HTML/PDF snapshot path, normalized-text snapshot path and all retained evidence versions for that source.
 
+### Action-oriented fact enrichment
+
+Reporting can persist a GPT-assisted fact layer so users can immediately see **who is eligible, what to do,
+which condition earns which reward, deadlines, exclusions and warnings**. GPT is used only to structure facts
+already present in canonical campaigns/extractions; every persisted fact must cite one or more extraction IDs.
+
+```bash
+# enrich one campaign
+python main.py enrich --campaign 88
+
+# enrich only cross-source verified campaigns
+python main.py enrich --verified-only
+
+# rerun only when you explicitly want to regenerate current facts
+python main.py enrich --campaign 88 --redo
+```
+
+The persisted layer uses:
+
+- `campaign_enrichments`: model/input hash/cache status
+- `campaign_facts`: headline, eligibility, required steps, action→reward facts, deadlines, warnings, etc.
+- `fact_evidence`: fact → extraction/snapshot provenance
+
+If campaign or extraction input changes, the stored input hash no longer matches and Report marks the enrichment
+`stale` instead of showing the old action plan. Numeric amounts, thresholds and dates produced by GPT are checked
+against the cited extraction evidence before persistence.
+
 ## Data and secrets
 
 Runtime data is intentionally not committed:

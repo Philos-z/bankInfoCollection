@@ -103,6 +103,39 @@ CREATE TABLE IF NOT EXISTS campaign_sources (
     PRIMARY KEY (campaign_id, extraction_id)
 );
 
+CREATE TABLE IF NOT EXISTS campaign_enrichments (
+    campaign_id     INTEGER PRIMARY KEY REFERENCES campaigns(id) ON DELETE CASCADE,
+    input_hash      TEXT NOT NULL,
+    model           TEXT NOT NULL,
+    status          TEXT NOT NULL CHECK (status IN ('complete', 'error')),
+    generated_at    TEXT NOT NULL,
+    raw_json        TEXT,
+    error           TEXT
+);
+
+CREATE TABLE IF NOT EXISTS campaign_facts (
+    id              INTEGER PRIMARY KEY,
+    campaign_id     INTEGER NOT NULL REFERENCES campaigns(id) ON DELETE CASCADE,
+    fact_type       TEXT NOT NULL CHECK (fact_type IN (
+        'headline', 'maximum_reward', 'eligibility', 'required_step', 'action_reward',
+        'optional_step', 'deadline', 'reward_period', 'exclusion', 'warning'
+    )),
+    fact_key        TEXT,
+    position        INTEGER NOT NULL DEFAULT 0,
+    value_json      TEXT NOT NULL,
+    confidence      REAL,
+    generated_at    TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_campaign_facts_campaign ON campaign_facts(campaign_id, fact_type, position);
+
+CREATE TABLE IF NOT EXISTS fact_evidence (
+    fact_id         INTEGER NOT NULL REFERENCES campaign_facts(id) ON DELETE CASCADE,
+    extraction_id   INTEGER NOT NULL REFERENCES campaign_extractions(id),
+    snapshot_id     INTEGER NOT NULL REFERENCES raw_snapshots(id),
+    PRIMARY KEY (fact_id, extraction_id)
+);
+CREATE INDEX IF NOT EXISTS idx_fact_evidence_extraction ON fact_evidence(extraction_id);
+
 CREATE TABLE IF NOT EXISTS discovery_leads (
     id          INTEGER PRIMARY KEY,
     bank_id     INTEGER NOT NULL REFERENCES banks(id),

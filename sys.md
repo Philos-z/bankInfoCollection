@@ -278,7 +278,11 @@ cp .env.example .env        # 填写 AI_BASE_URL / AI_API_KEY / AI_MODEL
 - [x] V1.1 Report 输出：默认面向最终用户展示当前有效活动；支持 `--verified-only`、`--bank`、`--type`、
       `--expiring`、`--json`，并支持单 campaign 的 evidence/source drill-down。JSON 输出同样必须带 provenance，
       不能把无法回溯到 source/snapshot/evidence 的 AI 总结当作已验证事实。
-- [ ] V1.1 Fact Enrichment：把当前较宽的 `conditions` / supporting conditions 进一步语义拆成明确的
-      `eligibility[]`、`requirements[]`、`benefit_components[]`，并要求每个聚合 fact 带 extraction/snapshot
-      evidence refs；应缓存结果，避免每次 `report` 都重新调用模型。当前 Reporting MVP 不伪造这层结构。
+- [x] V1.1 Fact Enrichment：新增持久化 `campaign_enrichments / campaign_facts / fact_evidence`，用 GPT-5.6 Sol
+      将 canonical campaign + supporting extractions 拆成 `headline / maximum_reward / eligibility /
+      required_step / action_reward / optional_step / deadline / reward_period / exclusion / warning`。
+      每条 fact 必须绑定当前 campaign 内的 extraction/snapshot evidence；数字/金额/日期经过 deterministic
+      grounding guard；输入 hash 变化后旧 facts 自动标记 stale，未变化则直接 cached，不让普通 report 重新调模型。
+      当前 7 个 verified campaigns 已全部 live enrich：**96 facts / 196 fact-evidence links / 0 error**，
+      全量 **91/91 tests** 通过。详见 `tests/eval_reports/v1_1_fact_enrichment_2026-09-28.md`。
 - [ ] 轮换曾在对话中明文出现过的 proxy key。

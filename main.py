@@ -5,6 +5,7 @@ import logging
 from config.loader import sync_config
 from crawler import runner, source_health
 from extractor.extractor import extract_pending
+from reporting.enrich import enrich_pending
 from reporting.report import as_json, campaign_facts, render_detail, render_summary, render_system, system_summary
 from storage.db import init_db, session
 from validator.validate import validate
@@ -34,6 +35,14 @@ def cmd_discover(a):
 def cmd_validate_leads(a):
     init_db()
     print(runner.validate_leads(a.bank, redo=a.redo, limit=a.limit, lead_id=a.lead))
+
+
+def cmd_enrich(a):
+    init_db()
+    print(json.dumps(enrich_pending(
+        bank=a.bank, campaign_id=a.campaign, verified_only=a.verified_only,
+        redo=a.redo, limit=a.limit
+    ), ensure_ascii=False, indent=2))
 
 
 def cmd_run(a):
@@ -171,6 +180,7 @@ def main():
         ("validate", cmd_validate, "cross-validate and update campaigns"),
         ("discover", cmd_discover, "AI-rank links on official pages into leads"),
         ("validate-leads", cmd_validate_leads, "fetch and content-validate discovery leads"),
+        ("enrich", cmd_enrich, "GPT-enrich campaign facts and persist evidence-bound action plans"),
         ("run", cmd_run, "init + crawl + extract + validate"),
         ("list", cmd_list, "show campaigns"),
         ("sources", cmd_sources, "show source health"),
@@ -192,6 +202,11 @@ def main():
             sp.add_argument("--redo", action="store_true", help="revalidate already-classified pending leads")
             sp.add_argument("--limit", type=int, help="validate at most N leads")
             sp.add_argument("--lead", type=int, help="validate/retry one lead id")
+        if name == "enrich":
+            sp.add_argument("--campaign", type=int, help="enrich one campaign id")
+            sp.add_argument("--verified-only", action="store_true", help="enrich only cross-source verified campaigns")
+            sp.add_argument("--redo", action="store_true", help="re-enrich even when current input is cached")
+            sp.add_argument("--limit", type=int, help="enrich at most N matching live campaigns")
         if name == "leads":
             sp.add_argument("--accept", type=int)
             sp.add_argument("--reject", type=int)

@@ -155,6 +155,12 @@ campaign 不得仅因为本轮 extraction 缺失就变成 `removed`；只有最�
 保护 V1.1 用户结果层：canonical campaign 聚合、独立 domain 计数、同一 source 多 snapshot 不重复计数、
 latest evidence 选择、完整 evidence history / raw snapshot provenance、report filter 与 system summary。
 
+### `test_enrichment.py`
+
+保护 GPT Fact Enrichment：结构化 action facts 必须引用当前 campaign 内的 extraction；未知 evidence ref
+会被拒绝；GPT 新增不存在的数字/金额会被 deterministic guard 拒绝；千分位和小数格式等价；facts 与
+snapshot evidence 会持久化；campaign/extraction 输入变化后旧 enrichment 自动变 `stale`，Report 不继续使用。
+
 完整 V1 系统验收见 `tests/eval_reports/v1_system_acceptance_2026-09-25.md`。
 
 ## 测试失败时怎么处理

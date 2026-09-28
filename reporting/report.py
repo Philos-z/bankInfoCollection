@@ -4,6 +4,7 @@ import json
 from collections import defaultdict
 from typing import Iterable
 
+from reporting.enrich import load_enrichment
 from validator.rules import MIN_CONFIDENCE_FOR_VERIFY
 
 
@@ -232,7 +233,12 @@ def campaign_facts(
         campaign_id=campaign_id,
     )
     supporters = _supporters(conn, [c["id"] for c in campaigns])
-    return [_build_fact(c, supporters.get(c["id"], [])) for c in campaigns]
+    results = []
+    for campaign in campaigns:
+        fact = _build_fact(campaign, supporters.get(campaign["id"], []))
+        fact["action_plan"] = load_enrichment(conn, campaign["id"])
+        results.append(fact)
+    return results
 
 
 def system_summary(conn) -> dict:
@@ -269,6 +275,11 @@ def _line(label: str, value) -> str:
     return f"{label}: {value if value not in (None, '') else '-'}"
 
 
+def _fact_domains(item: dict) -> str:
+    domains = sorted({ref.get("domain") for ref in item.get("evidence_refs", []) if ref.get("domain")})
+    return ", ".join(domains)
+
+
 def render_summary(facts: list[dict]) -> str:
     verified = sum(1 for f in facts if f["verification"]["status"] == "verified")
     lines = [f"Campaign Report — {len(facts)} campaign(s), {verified} verified", ""]
@@ -278,16 +289,27 @@ def render_summary(facts: list[dict]) -> str:
         campaign = fact["campaign"]
         validity = fact["validity"]
         verification = fact["verification"]
+        action_plan = fact.get("action_plan") or {}
+        enriched = action_plan.get("status") == "complete"
+        headline = None
+        max_reward = None
+        actions: list[dict] = []
+        if enriched:
+            grouped = action_plan["facts"]
+            headline = (grouped.get("headline") or [{}])[0].get("text")
+            max_reward = (grouped.get("maximum_reward") or [{}])[0].get("text")
+            actions = grouped.get("action_reward") or []
         lines.extend([
             f"{idx}. [{verification['status'].upper()}] {bank} — {product}",
             f"   {campaign['title']}",
-            f"   Reward: {campaign['reward'] or '-'}",
-            f"   Summary: {campaign['summary'] or '-'}",
-            f"   Conditions: {campaign['conditions'] or '-'}",
+            f"   What you can get: {max_reward or campaign['reward'] or '-'}",
+            f"   {headline or campaign['summary'] or '-'}",
+            *([f"   Action: {a.get('action') or '-'} → {a.get('reward') or '-'}" for a in actions[:3]] if actions else
+              [f"   Conditions: {campaign['conditions'] or '-'}"]),
             f"   Validity: {validity['start_date'] or '-'} → {validity['end_date'] or '-'} "
             f"({validity['lifecycle_status']})",
             f"   Sources: {verification['independent_source_count']} independent domain(s) | "
-            f"Campaign ID: {fact['campaign_id']}",
+            f"Campaign ID: {fact['campaign_id']} | Facts: {action_plan.get('status', 'missing')}",
             "",
         ])
     return "\n".join(lines).rstrip()
@@ -311,6 +333,60 @@ def render_detail(fact: dict) -> str:
         _line("Verification", f"{ver['status']} · {ver['independent_source_count']} independent domain(s)"),
         _line("Domains", ", ".join(ver["independent_domains"]) or "-"),
     ]
+    action_plan = fact.get("action_plan") or {"status": "missing", "facts": {}}
+    lines.extend(["", "Action plan"])
+    if action_plan.get("status") == "complete":
+        grouped = action_plan["facts"]
+        headline = (grouped.get("headline") or [{}])[0].get("text")
+        maximum = (grouped.get("maximum_reward") or [{}])[0].get("text")
+        if headline:
+            lines.append(f"  {headline}")
+        if maximum:
+            lines.append(f"  Maximum reward: {maximum}")
+        if grouped.get("eligibility"):
+            lines.append("\n  Eligibility:")
+            lines.extend(
+                f"    - {item.get('text')} [evidence: {_fact_domains(item) or '-'}]"
+                for item in grouped["eligibility"]
+            )
+        if grouped.get("required_step"):
+            lines.append("\n  Required first steps:")
+            lines.extend(
+                f"    - {item.get('text')} [evidence: {_fact_domains(item) or '-'}]"
+                for item in grouped["required_step"]
+            )
+        if grouped.get("action_reward"):
+            lines.append("\n  What to do → what you get:")
+            for item in grouped["action_reward"]:
+                requirement = f" ({item.get('requirement')})" if item.get("requirement") else ""
+                optional = "optional" if item.get("optional") else "required"
+                lines.append(
+                    f"    - {item.get('action')}{requirement} → {item.get('reward') or '-'} "
+                    f"[{optional}; evidence: {_fact_domains(item) or '-'}]"
+                )
+        if grouped.get("optional_step"):
+            lines.append("\n  Optional steps:")
+            lines.extend(f"    - {item.get('text')}" for item in grouped["optional_step"])
+        deadline = (grouped.get("deadline") or [{}])[0].get("text")
+        reward_period = (grouped.get("reward_period") or [{}])[0].get("text")
+        if deadline:
+            lines.append(f"\n  Deadline: {deadline}")
+        if reward_period:
+            lines.append(f"  Reward period: {reward_period}")
+        if grouped.get("exclusion"):
+            lines.append("\n  Exclusions:")
+            lines.extend(f"    - {item.get('text')}" for item in grouped["exclusion"])
+        if grouped.get("warning"):
+            lines.append("\n  Warnings:")
+            lines.extend(f"    - {item.get('text')}" for item in grouped["warning"])
+        lines.append(
+            f"\n  Facts generated: {action_plan.get('generated_at')} with {action_plan.get('model')}"
+        )
+    else:
+        lines.append(
+            f"  Structured facts: {action_plan.get('status', 'missing')} "
+            f"(run: python main.py enrich --campaign {fact['campaign_id']})"
+        )
     if c["supporting_conditions"]:
         lines.extend(["", "Additional conditions found in supporting sources:"])
         lines.extend(f"  - {value}" for value in c["supporting_conditions"])
